@@ -78,6 +78,8 @@ type Modules struct {
 	Router *Router `json:"router,omitempty"`
 
 	MissionStatePruner *MissionStatePruner `json:"missionstatepruner,omitempty"`
+
+	Gateway *Gateway `json:"gateway,omitempty"`
 }
 
 // CloudHub indicates the config of CloudHub module.
@@ -426,4 +428,11 @@ type MissionStatePruner struct {
 	//The seconds that an edgecluster will be deemed as 'offline' if it has not reported a heartbeat
 	//default 60
 	EdgeClusterTimeout int `json:"edgeClusterTimeout,omitempty"`
+}
+
+type Gateway struct {
+	// default false
+	Enable bool `json:"enable,omitempty"`
+    // default 10005
+	Port uint32 `json:"port,omitempty"`
 }

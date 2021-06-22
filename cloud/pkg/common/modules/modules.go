@@ -25,5 +25,8 @@ const (
 	MissionStatePrunerModuleName = "missionstatepruner"
 	MissionStatePrunerGroupName  = "missionstatepruner"
 
+	GatewayModuleName = "gateway"
+	GatewayGroupName  = "gateway"
+
 	UserGroup = "user"
 )

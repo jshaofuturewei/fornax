@@ -173,6 +173,10 @@ func NewDefaultCloudCoreConfig() *CloudCoreConfig {
 				SyncInterval:       constants.DefaultStateSyncInterval,
 				EdgeClusterTimeout: constants.DefaultEdgeClusterTimeout,
 			},
+			Gateway: &Gateway{
+				Enable:             false,
+				Port:               10005,
+			},
 		},
 		LeaderElection: &componentbaseconfig.LeaderElectionConfiguration{
 			LeaderElect:       false,
