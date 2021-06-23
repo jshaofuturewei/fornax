@@ -1,8 +1,6 @@
 package gateway
 
 import (
-	"k8s.io/klog/v2"
-
 	"github.com/kubeedge/beehive/pkg/core"
 	"github.com/kubeedge/kubeedge/cloud/pkg/common/modules"
 	"github.com/kubeedge/kubeedge/cloud/pkg/gateway/config"
@@ -11,12 +9,18 @@ import (
 
 type Gateway struct {
 	enable             bool
+	address            string
+	port               uint32
 }
 
-func newGateway(gw *configv1alpha1.Gateway) *Gateway {
-	return &Gateway{
-		enable:                gw.Enable,
+func newGateway(c *configv1alpha1.Gateway) *Gateway {
+	gw := Gateway{
+		enable:                c.Enable,
+		address:               c.Address,
+		port:                  c.Port,
 	}
+
+	return &gw
 }
 
 func Register(gw *configv1alpha1.Gateway) {
@@ -37,6 +41,6 @@ func (gw *Gateway) Enable() bool {
 }
 
 func (gw *Gateway) Start() {
-	klog.Infof("Gateway started.")
+	
+	go startGatewayServer()	
 }
-

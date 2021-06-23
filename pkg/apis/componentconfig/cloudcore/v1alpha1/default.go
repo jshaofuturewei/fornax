@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"os"
 	"path"
 	"time"
 
@@ -31,6 +32,7 @@ import (
 // NewDefaultCloudCoreConfig returns a full CloudCoreConfig object
 func NewDefaultCloudCoreConfig() *CloudCoreConfig {
 	advertiseAddress, _ := utilnet.ChooseHostInterface()
+	cloudHostName, _ := os.Hostname()
 
 	c := &CloudCoreConfig{
 		TypeMeta: metav1.TypeMeta{
@@ -175,7 +177,10 @@ func NewDefaultCloudCoreConfig() *CloudCoreConfig {
 			},
 			Gateway: &Gateway{
 				Enable:             false,
+				Address:            "0.0.0.0",
 				Port:               10005,
+				ClusterName:        cloudHostName,
+				HandshakeTimeout:   30,
 			},
 		},
 		LeaderElection: &componentbaseconfig.LeaderElectionConfiguration{

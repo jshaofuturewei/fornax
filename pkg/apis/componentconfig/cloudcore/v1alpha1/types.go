@@ -433,6 +433,17 @@ type MissionStatePruner struct {
 type Gateway struct {
 	// default false
 	Enable bool `json:"enable,omitempty"`
+	// Address set server ip address
+	// default 0.0.0.0
+	Address string `json:"address,omitempty"`
     // default 10005
 	Port uint32 `json:"port,omitempty"`
+
+	// the timeout of handshare in seconds
+	// default 30
+	HandshakeTimeout uint16 `json:"handshake-timeout,omitempty"`
+
+	// the name of the cluster for inter-cluster communication
+	// default os.Hostname()
+	ClusterName string `json:"clusterName,omitempty"`
 }
