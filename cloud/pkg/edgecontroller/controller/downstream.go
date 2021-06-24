@@ -2,7 +2,9 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	"reflect"
+	"net"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -17,10 +19,11 @@ import (
 	beehiveContext "github.com/kubeedge/beehive/pkg/core/context"
 	"github.com/kubeedge/beehive/pkg/core/model"
 	edgeclustersv1 "github.com/kubeedge/kubeedge/cloud/pkg/apis/edgeclusters/v1"
+	networkingv1 "github.com/kubeedge/kubeedge/cloud/pkg/apis/networking/v1"
 	routerv1 "github.com/kubeedge/kubeedge/cloud/pkg/apis/rules/v1"
 	crdClientset "github.com/kubeedge/kubeedge/cloud/pkg/client/clientset/versioned"
 	crdinformers "github.com/kubeedge/kubeedge/cloud/pkg/client/informers/externalversions"
-	crdlister "github.com/kubeedge/kubeedge/cloud/pkg/client/listers/edgeclusters/v1"
+	edgeclusterlister "github.com/kubeedge/kubeedge/cloud/pkg/client/listers/edgeclusters/v1"
 	"github.com/kubeedge/kubeedge/cloud/pkg/common/client"
 	"github.com/kubeedge/kubeedge/cloud/pkg/common/informers"
 	"github.com/kubeedge/kubeedge/cloud/pkg/common/modules"
@@ -28,6 +31,7 @@ import (
 	"github.com/kubeedge/kubeedge/cloud/pkg/edgecontroller/manager"
 	"github.com/kubeedge/kubeedge/cloud/pkg/edgecontroller/messagelayer"
 	common "github.com/kubeedge/kubeedge/common/constants"
+	"github.com/kubeedge/kubeedge/cloud/pkg/gateway/vpcmap"
 )
 
 // DownstreamController watch kubernetes api server and send change to edge
@@ -64,7 +68,9 @@ type DownstreamController struct {
 
 	podLister clientgov1.PodLister
 
-	missionLister crdlister.MissionLister
+	missionLister edgeclusterlister.MissionLister
+
+	vpcManager *manager.VpcManager
 }
 
 func (dc *DownstreamController) syncPod() {
@@ -677,6 +683,52 @@ func (dc *DownstreamController) syncEdgeClusters() {
 	}
 }
 
+func (dc *DownstreamController) syncVpcs() {
+	for {
+		select {
+		case <-beehiveContext.Done():
+			klog.Warning("Stop edgecontroller downstream syncVpc loop")
+			return
+		case e := <-dc.vpcManager.Events():
+			klog.V(4).Infof("Get vpc events: event type: %s.", e.Type)
+			vpc, ok := e.Object.(*networkingv1.Vpc)
+			if !ok {
+				klog.Warningf("object type: %T unsupported", vpc)
+				continue
+			}
+			klog.V(4).Infof("Get vpc events: vpc object: %+v.", vpc)
+			switch e.Type {
+			case watch.Added:
+				fallthrough
+			case watch.Modified:
+				subnetInfoList := []vpcmap.SubnetInfo{}
+				for _, subnet := range vpc.Spec.Subnets {
+					_, ipnet, err := net.ParseCIDR(subnet.Spec.CIDR)
+					if err != nil {
+						klog.Errorf("Error in parse CIDR %v", subnet.Spec.CIDR)
+						continue
+					}
+					subnetInfoList = append(subnetInfoList, vpcmap.SubnetInfo{IpNet: ipnet, GatewayIP: subnet.Spec.GatewayAddress})
+				}
+
+				vpcmap.VPC_MAP[vpc.Spec.Vni] = subnetInfoList
+
+				fmt.Printf("\n1 ____________________VPC_MAP  %v ", vpcmap.VPC_MAP)
+
+			case watch.Deleted:
+				delete(vpcmap.VPC_MAP, vpc.Spec.Vni)
+
+				fmt.Printf("\n2 ____________________VPC_MAP  %v ", vpcmap.VPC_MAP)
+
+			default:
+				// unsupported operation, no need to send to any node
+				klog.Warningf("Vpc event type: %s unsupported", e.Type)
+				continue
+			}
+		}
+	}
+}
+
 // Start DownstreamController
 func (dc *DownstreamController) Start() error {
 	klog.Info("start downstream controller")
@@ -709,6 +761,9 @@ func (dc *DownstreamController) Start() error {
 
 	// edgecluster
 	go dc.syncEdgeClusters()
+
+	// vpc
+	go dc.syncVpcs()
 
 	return nil
 }

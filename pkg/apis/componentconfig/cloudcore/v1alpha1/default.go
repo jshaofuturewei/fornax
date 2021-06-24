@@ -107,6 +107,7 @@ func NewDefaultCloudCoreConfig() *CloudCoreConfig {
 					UpdateEdgeClusterStatus:    constants.DefaultUpdateEdgeClusterStatusBuffer,
 					EdgeClustersEvent:          constants.DefaultEdgeClustersEventBuffer,
 					UpdateMissionState:         constants.DefaultUpdateMissionStateBuffer,
+					VpcsEvent:                  constants.DefaultVpcsEventBuffer,
 				},
 				Context: &ControllerContext{
 					SendModule:       metaconfig.ModuleNameCloudHub,

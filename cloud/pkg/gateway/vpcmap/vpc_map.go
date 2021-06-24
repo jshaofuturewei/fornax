@@ -1,14 +1,15 @@
-package config
+package vpcmap
 
 import (
+	"fmt"
 	"net"
 )
 
 var VPC_MAP map[string][]SubnetInfo
 
-type SubnetInfo {
-	ipnet *net.IPNet
-	gatewayIP string
+type SubnetInfo struct {
+	IpNet *net.IPNet
+	GatewayIP string
 }
 
 func GetGatewayIP(vpcId string, ip string) (string, error) {
@@ -17,9 +18,13 @@ func GetGatewayIP(vpcId string, ip string) (string, error) {
 		return "", fmt.Errorf("vpc %v not found.", vpcId)
 	}
 
+	IP := net.ParseIP(ip)
+	if IP == nil {
+		return "", fmt.Errorf("invalid IP address %v", ip)
+	}
 	for _, subnetInfo := range subnetInfoList {
-		if subnetInfo.ipnet.Contains(ip) {
-			return subnetInfo.gatewayIP
+		if subnetInfo.IpNet.Contains(IP) {
+			return subnetInfo.GatewayIP, nil
 		}
 	}
 
