@@ -24,18 +24,18 @@ func startGatewayServer() {
 func ServeHTTPIntraCluster(w http.ResponseWriter, req *http.Request) {
 	klog.V(5).Infof("Received a request inside the cluster %v, req")
 
-	vpcId, ipAddr, err := parseRequest(req)
+	vpcId, srcIp, destIp, payload, err := parseRequest(req)
 	if err != nil {
 		fmt.Fprintf(w, fmt.Sprintf("Error in parse request: %v", err))
 		return
 	}
 
-	if IsLocalCIDR(vpcId, ipAddr) {
+	if IsLocalCIDR(vpcId, destIp) {
 		fmt.Fprintf(w, "Not a request to another cluster. Dropped")
 		return
 	}
 
-	addr, port, err := getDestGateway(vpcId, ipAddr)
+	addr, port, err := getDestGateway(vpcId, destIp)
 	if err != nil {
 		fmt.Fprintf(w, fmt.Sprintf("Error in getting dest GW: %v", err))
 		return
@@ -43,16 +43,17 @@ func ServeHTTPIntraCluster(w http.ResponseWriter, req *http.Request) {
 
 	gw_url := fmt.Sprintf("http://%v/%v/inter-cluster", addr, port)
 	postBody, _ := json.Marshal(map[string]string{
-		"name":  "Toby",
-		"email": "Toby@example.com",
+		"vpcId": vpcId,
+		"srcip": srcIp,
+		"destip": destIp,
+		"payload": payload,
 	 })
 	responseBody := bytes.NewBuffer(postBody)
 	resp, err := http.Post(gw_url, "application/json", responseBody)
 	defer resp.Body.Close()
 	if err != nil {
-		fmt.Fprintf(w, fmt.Sprintf("Error in posting request: %v", err))
+		fmt.Fprintf(w, fmt.Sprintf("Error in posting request to destination gateway: %v", err))
 		return
-
 	}
 
 	fmt.Fprintf(w, "OK")
@@ -63,8 +64,8 @@ func ServeHTTPInterCluster(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(w, "OK")
 }
 
-func parseRequest(req *http.Request) (string, string, error) {
-	return "fake-vpc", "fake-addr", nil
+func parseRequest(req *http.Request) (vpcId, srcIp, destIp, payload string, err error) {
+	return "fake-vpc", "fake-src", "fake-dest", "fake-payload", nil
 }
 
 func getDestGateway(vpc, ipAddr string) (string, uint16, error) {
