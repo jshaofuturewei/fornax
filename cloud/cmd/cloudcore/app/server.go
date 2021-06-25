@@ -16,6 +16,7 @@ import (
 	"github.com/kubeedge/kubeedge/cloud/pkg/cloudhub"
 	hubconfig "github.com/kubeedge/kubeedge/cloud/pkg/cloudhub/config"
 	"github.com/kubeedge/kubeedge/cloud/pkg/cloudstream"
+	"github.com/kubeedge/kubeedge/cloud/pkg/gateway"
 	"github.com/kubeedge/kubeedge/cloud/pkg/common/client"
 	"github.com/kubeedge/kubeedge/cloud/pkg/common/informers"
 	"github.com/kubeedge/kubeedge/cloud/pkg/devicecontroller"
@@ -115,4 +116,5 @@ func registerModules(c *v1alpha1.CloudCoreConfig) {
 	router.Register(c.Modules.Router)
 	dynamiccontroller.Register(c.Modules.DynamicController)
 	missionstatepruner.Register(c.Modules.MissionStatePruner)
+	gateway.Register(c.Modules.Gateway)
 }

@@ -78,6 +78,8 @@ type Modules struct {
 	Router *Router `json:"router,omitempty"`
 
 	MissionStatePruner *MissionStatePruner `json:"missionstatepruner,omitempty"`
+
+	Gateway *Gateway `json:"gateway,omitempty"`
 }
 
 // CloudHub indicates the config of CloudHub module.
@@ -266,6 +268,8 @@ type EdgeControllerBuffer struct {
 	UpdateEdgeClusterStatus int32 `json:"updateEdgeClusterStatus,omitempty"`
 	// default 1
 	EdgeClustersEvent int32 `json:"edgeClustersEvent,omitempty"`
+	// default 1
+	VpcsEvent int32 `json:"vpcsEvent,omitempty"`
 }
 
 // ControllerContext indicates the message layer context for all controllers
@@ -426,4 +430,22 @@ type MissionStatePruner struct {
 	//The seconds that an edgecluster will be deemed as 'offline' if it has not reported a heartbeat
 	//default 60
 	EdgeClusterTimeout int `json:"edgeClusterTimeout,omitempty"`
+}
+
+type Gateway struct {
+	// default false
+	Enable bool `json:"enable,omitempty"`
+	// Address set server ip address
+	// default 0.0.0.0
+	Address string `json:"address,omitempty"`
+    // default 10005
+	Port uint32 `json:"port,omitempty"`
+
+	// the timeout of handshare in seconds
+	// default 30
+	HandshakeTimeout uint16 `json:"handshake-timeout,omitempty"`
+
+	// the name of the cluster for inter-cluster communication
+	// default os.Hostname()
+	ClusterName string `json:"clusterName,omitempty"`
 }
