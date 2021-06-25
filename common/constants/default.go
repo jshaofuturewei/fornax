@@ -122,6 +122,7 @@ const (
 
 	DefaultMissionsEventBuffer     = 1
 	DefaultEdgeClustersEventBuffer = 1
+	DefaultVpcsEventBuffer = 1
 
 	// DeviceController
 	DefaultUpdateDeviceStatusBuffer  = 1024
