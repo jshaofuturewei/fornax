@@ -1,0 +1,12 @@
+apiVersion: networking.kubeedge.io/v1
+kind: Vpc
+metadata:
+  name: vpc1
+spec:
+  cidr: "0.0.0.0/32"
+  vni: "1"
+  subnets:
+    - cidr: "192.168.0.0/16"
+      gatewayAddress: "172.31.9.41"
+    - cidr: "10.10.0.0/24"
+      gatewayAddress: "172.31.25.97"
