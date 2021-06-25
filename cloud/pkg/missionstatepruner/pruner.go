@@ -55,7 +55,7 @@ func (msp *MissionStatePruner) Name() string {
 }
 
 func (msp *MissionStatePruner) Group() string {
-	return modules.SyncControllerModuleGroup
+	return modules.MissionStatePrunerGroupName
 }
 
 func (msp *MissionStatePruner) Enable() bool {

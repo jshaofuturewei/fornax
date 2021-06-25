@@ -43,8 +43,15 @@ type VpcSpec struct {
 
 	Vni string `json:"vni,omitempty"`
 
-	subnets []Subnet `json:"subnets,omitempty"`
+	Subnets []SubnetData `json:"subnets,omitempty"`
 }
+
+type SubnetData struct {
+	CIDR string `json:"cidr,omitempty"`
+
+	GatewayAddress string `json:"gatewayAddress,omitempty"`
+}
+
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
