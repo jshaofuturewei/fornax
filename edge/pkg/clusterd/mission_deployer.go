@@ -43,6 +43,42 @@ func NewMissionDeployer() *MissionDeployer {
 	}
 }
 
+func getDeployContentCmd(mission *edgeclustersv1.Mission) (string, error) {
+	var deployContentCmd string
+	if strings.TrimSpace(mission.Spec.MissionResource) != "" {
+		deployContentCmd = fmt.Sprintf("printf \"%s\" | %s apply --kubeconfig=%s -f - ", mission.Spec.MissionResource, config.Config.KubectlCli, config.Config.Kubeconfig)
+		return deployContentCmd, nil
+	}
+
+	if strings.TrimSpace(mission.Spec.MissionCommand.Command) == "" {
+		return "", fmt.Errorf("No command or resource is specified in mission %s", mission.Name)
+	}
+
+	deployContentCmd = strings.ReplaceAll(mission.Spec.MissionCommand.Command, "[kubectl]", config.Config.KubectlCli)
+	deployContentCmd = strings.ReplaceAll(deployContentCmd, "[kubeconfig]", config.Config.Kubeconfig)
+
+	return deployContentCmd, nil
+}
+
+func getDeleteContentCmd(mission *edgeclustersv1.Mission) (string, error) {
+	var deleteContentCmd string
+	if strings.TrimSpace(mission.Spec.MissionResource) != "" {
+		deleteContentCmd = fmt.Sprintf("printf \"%s\" | %s delete --kubeconfig=%s -f - ", mission.Spec.MissionResource, config.Config.KubectlCli, config.Config.Kubeconfig)
+		return deleteContentCmd, nil
+	}
+
+	if strings.TrimSpace(mission.Spec.MissionCommand.ReverseCommand) == "" {
+		// it is ok to have an empty reverse command for now.
+		// may change in the future.
+		return "", nil
+	}
+
+	deleteContentCmd = strings.ReplaceAll(mission.Spec.MissionCommand.ReverseCommand, "[kubectl]", config.Config.KubectlCli)
+	deleteContentCmd = strings.ReplaceAll(deleteContentCmd, "[kubeconfig]", config.Config.Kubeconfig)
+
+	return deleteContentCmd, nil
+}
+
 func (m *MissionDeployer) ApplyMission(mission *edgeclustersv1.Mission) error {
 	cacheLock.Lock()
 	m.MissionMatch[mission.Name] = m.isMatchingMission(mission)
@@ -52,8 +88,8 @@ func (m *MissionDeployer) ApplyMission(mission *edgeclustersv1.Mission) error {
 		// log the error and move on to apply the mission content
 		klog.Errorf("Error in building mission yaml: %v. Moving on.", err)
 	} else {
-		ddeployMissionCmd := fmt.Sprintf("printf \"%s\" | %s apply --kubeconfig=%s -f - ", missionYaml, config.Config.KubectlCli, config.Config.Kubeconfig)
-		output, err := helper.ExecCommandToCluster(ddeployMissionCmd)
+		deployMissionCmd := fmt.Sprintf("printf \"%s\" | %s apply --kubeconfig=%s -f - ", missionYaml, config.Config.KubectlCli, config.Config.Kubeconfig)
+		output, err := helper.ExecCommandToCluster(deployMissionCmd)
 		if err != nil {
 			klog.Errorf("Failed to apply mission %v: %v", mission.Name, err)
 		} else {
@@ -68,8 +104,10 @@ func (m *MissionDeployer) ApplyMission(mission *edgeclustersv1.Mission) error {
 	if !m.isMatchingMission(mission) {
 		klog.V(3).Infof("Mission %v does not match this cluster, skip the content applying", mission.Name)
 	} else {
-		if strings.TrimSpace(mission.Spec.MissionResource) != "" {
-			deployContentCmd := fmt.Sprintf("printf \"%s\" | %s apply --kubeconfig=%s -f - ", mission.Spec.MissionResource, config.Config.KubectlCli, config.Config.Kubeconfig)
+		deployContentCmd, err := getDeployContentCmd(mission)
+		if err !=nil {
+			klog.Errorf("Failed to get the content deploy command of mission %v: %v", mission.Name, err)
+		} else {
 			output, err := helper.ExecCommandToCluster(deployContentCmd)
 			if err != nil {
 				klog.Errorf("Failed to apply the content of mission %v: %v", mission.Name, err)
@@ -95,9 +133,11 @@ func (m *MissionDeployer) DeleteMission(mission *edgeclustersv1.Mission) error {
 	if !m.isMatchingMission(mission) {
 		klog.V(4).Infof("Mission %v does not match this cluster", mission.Name)
 	} else {
-		if strings.TrimSpace(mission.Spec.MissionResource) != "" {
-			deployContentCmd := fmt.Sprintf("printf \"%s\" | %s delete --kubeconfig=%s -f - ", mission.Spec.MissionResource, config.Config.KubectlCli, config.Config.Kubeconfig)
-			_, err := helper.ExecCommandToCluster(deployContentCmd)
+		deleteContentCmd, err := getDeleteContentCmd(mission)
+		if err != nil {
+			klog.Errorf("Failed to get the content delete command of mission %v: %v", mission.Name, err)
+		} else {
+			_, err = helper.ExecCommandToCluster(deleteContentCmd)
 			if err != nil {
 				klog.Errorf("Failed to revert the content of mission %v: %v", mission.Name, err)
 			} else {
