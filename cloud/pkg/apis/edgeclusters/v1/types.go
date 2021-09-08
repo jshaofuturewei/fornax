@@ -37,11 +37,20 @@ type Mission struct {
 
 // MissionSpec is a description of Mission
 type MissionSpec struct {
-	Content string `json:"content,omitempty"`
+	MissionResource string `json:"missionresource,omitempty"`
+
+	MissionCommand MissionCommandSpec `json:"missioncommand,omitempty"`
 
 	Placement GenericPlacementFields `json:"placement,omitempty"`
 
 	StateCheck StateCheckFields `json:"statecheck"`
+}
+
+// MissionSpec is a description of Mission
+type MissionCommandSpec struct {
+	Command string `json:"command,omitempty"`
+
+	ReverseCommand string `json:"reversecommand,omitempty"`
 }
 
 type GenericClusterReference struct {

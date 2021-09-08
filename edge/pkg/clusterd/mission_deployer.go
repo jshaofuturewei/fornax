@@ -68,8 +68,8 @@ func (m *MissionDeployer) ApplyMission(mission *edgeclustersv1.Mission) error {
 	if !m.isMatchingMission(mission) {
 		klog.V(3).Infof("Mission %v does not match this cluster, skip the content applying", mission.Name)
 	} else {
-		if strings.TrimSpace(mission.Spec.Content) != "" {
-			deployContentCmd := fmt.Sprintf("printf \"%s\" | %s apply --kubeconfig=%s -f - ", mission.Spec.Content, config.Config.KubectlCli, config.Config.Kubeconfig)
+		if strings.TrimSpace(mission.Spec.MissionResource) != "" {
+			deployContentCmd := fmt.Sprintf("printf \"%s\" | %s apply --kubeconfig=%s -f - ", mission.Spec.MissionResource, config.Config.KubectlCli, config.Config.Kubeconfig)
 			output, err := helper.ExecCommandToCluster(deployContentCmd)
 			if err != nil {
 				klog.Errorf("Failed to apply the content of mission %v: %v", mission.Name, err)
@@ -95,8 +95,8 @@ func (m *MissionDeployer) DeleteMission(mission *edgeclustersv1.Mission) error {
 	if !m.isMatchingMission(mission) {
 		klog.V(4).Infof("Mission %v does not match this cluster", mission.Name)
 	} else {
-		if strings.TrimSpace(mission.Spec.Content) != "" {
-			deployContentCmd := fmt.Sprintf("printf \"%s\" | %s delete --kubeconfig=%s -f - ", mission.Spec.Content, config.Config.KubectlCli, config.Config.Kubeconfig)
+		if strings.TrimSpace(mission.Spec.MissionResource) != "" {
+			deployContentCmd := fmt.Sprintf("printf \"%s\" | %s delete --kubeconfig=%s -f - ", mission.Spec.MissionResource, config.Config.KubectlCli, config.Config.Kubeconfig)
 			_, err := helper.ExecCommandToCluster(deployContentCmd)
 			if err != nil {
 				klog.Errorf("Failed to revert the content of mission %v: %v", mission.Name, err)
@@ -229,7 +229,7 @@ func (m *MissionDeployer) GetStateCheckCommand(mission *edgeclustersv1.Mission) 
 		return strings.ReplaceAll(command, "${kubectl}", config.Config.KubectlCli)
 	}
 
-	kind, name, namespace := helper.AnalyzeMissionContent(mission.Spec.Content)
+	kind, name, namespace := helper.AnalyzeMissionContent(mission.Spec.MissionResource)
 
 	command = fmt.Sprintf("%v get %v %v -n \"%v\" --kubeconfig %v --no-headers", config.Config.KubectlCli, kind, name, namespace, config.Config.Kubeconfig)
 
