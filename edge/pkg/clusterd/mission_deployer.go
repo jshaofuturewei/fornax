@@ -229,6 +229,19 @@ func buildMissionYaml(input *edgeclustersv1.Mission) (string, error) {
 		input.Spec.StateCheck.Command = " "
 	}
 
+	if input.Spec.MissionResource == "" {
+		input.Spec.MissionResource = " "
+	}
+
+	if input.Spec.MissionCommand.Command == "" {
+		input.Spec.MissionCommand.Command = " "
+	}
+
+	if input.Spec.MissionCommand.ReverseCommand == "" {
+		input.Spec.MissionCommand.ReverseCommand = " "
+	}
+
+
 	yamlPart1Template := `apiVersion: edgeclusters.kubeedge.io/v1
 kind: Mission
 metadata:

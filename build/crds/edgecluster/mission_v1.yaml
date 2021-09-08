@@ -29,8 +29,15 @@ spec:
          spec:
           type: object
           properties:
-            content: 
+            missionresource: 
               type: string
+            missioncommand:
+              type: object
+              properties:
+                command:
+                  type: string
+                reversecommand:
+                  type: string
             placement:
               type: object
               properties:
