@@ -46,7 +46,7 @@ func NewMissionDeployer() *MissionDeployer {
 func getDeployContentCmd(mission *edgeclustersv1.Mission) (string, error) {
 	var deployContentCmd string
 	if strings.TrimSpace(mission.Spec.MissionResource) != "" {
-		deployContentCmd = fmt.Sprintf("printf \"%s\" | %s apply --kubeconfig=%s -f - ", mission.Spec.MissionResource, config.Config.KubectlCli, config.Config.Kubeconfig)
+		deployContentCmd = fmt.Sprintf("printf '%s' | %s apply --kubeconfig=%s -f - ", mission.Spec.MissionResource, config.Config.KubectlCli, config.Config.Kubeconfig)
 		return deployContentCmd, nil
 	}
 
@@ -63,7 +63,7 @@ func getDeployContentCmd(mission *edgeclustersv1.Mission) (string, error) {
 func getDeleteContentCmd(mission *edgeclustersv1.Mission) (string, error) {
 	var deleteContentCmd string
 	if strings.TrimSpace(mission.Spec.MissionResource) != "" {
-		deleteContentCmd = fmt.Sprintf("printf \"%s\" | %s delete --kubeconfig=%s -f - ", mission.Spec.MissionResource, config.Config.KubectlCli, config.Config.Kubeconfig)
+		deleteContentCmd = fmt.Sprintf("printf '%s' | %s delete --kubeconfig=%s -f - ", mission.Spec.MissionResource, config.Config.KubectlCli, config.Config.Kubeconfig)
 		return deleteContentCmd, nil
 	}
 
@@ -88,7 +88,7 @@ func (m *MissionDeployer) ApplyMission(mission *edgeclustersv1.Mission) error {
 		// log the error and move on to apply the mission content
 		klog.Errorf("Error in building mission yaml: %v. Moving on.", err)
 	} else {
-		deployMissionCmd := fmt.Sprintf("printf \"%s\" | %s apply --kubeconfig=%s -f - ", missionYaml, config.Config.KubectlCli, config.Config.Kubeconfig)
+		deployMissionCmd := fmt.Sprintf("printf '%s' | %s apply --kubeconfig=%s -f - ", missionYaml, config.Config.KubectlCli, config.Config.Kubeconfig)
 		output, err := helper.ExecCommandToCluster(deployMissionCmd)
 		if err != nil {
 			klog.Errorf("Failed to apply mission %v: %v", mission.Name, err)
