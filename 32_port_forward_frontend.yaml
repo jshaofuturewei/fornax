@@ -1,0 +1,9 @@
+apiVersion: edgeclusters.kubeedge.io/v1
+kind: Mission
+metadata:
+  name: command-frontend-port-forward
+spec:
+  statecheck:
+    command: "echo port 8081"
+  missioncommand: 
+    command: "netstat -tulpn | grep LISTEN | grep 8081 || [kubectl] port-forward $([kubectl] get pods -l app=frontend -n face --kubeconfig [kubeconfig] -o json |  jq -r .items[0].metadata.name) 8081:8081  -n face --kubeconfig [kubeconfig] & echo"

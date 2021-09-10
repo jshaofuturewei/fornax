@@ -7,7 +7,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     metadata:
-      name: image-processor-deployment\namespace: face
+      name: image-processor-deployment
+      namespace: face
     spec:
       selector:
         matchLabels:

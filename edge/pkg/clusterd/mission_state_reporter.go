@@ -110,11 +110,14 @@ func (m *MissionStateReporter) stateSyncer() {
 			m.queue.Add(mission.Name)
 		} else {
 			// if the state has been idle for a long time, we send an update
-			if i, ok := m.stateIdleCycles[mission.Name]; ok {
+			stateCycleLock.Lock()
+			missionIdleCycles, exists := m.stateIdleCycles[mission.Name]
+			stateCycleLock.Unlock()
+			if exists {
 				stateCycleLock.Lock()
 				m.stateIdleCycles[mission.Name]++
 				stateCycleLock.Unlock()
-				if i > m.maxStateIdleCycles {
+				if missionIdleCycles > m.maxStateIdleCycles {
 					m.queue.Add(mission.Name)
 				}
 			}
