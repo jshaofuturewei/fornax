@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"k8s.io/klog/v2"
@@ -43,6 +44,18 @@ func ExecCommandLine(commandline string) (string, error) {
 
 func ExecCommandLineWithTimeOut(commandline string, timeout int) (string, error) {
 	var cmd *exec.Cmd
+
+	/*if !strings.Contains(commandline, " mission") && !strings.Contains(commandline, "cluster-info") && !strings.Contains(commandline, "get nodes") &&  !strings.Contains(commandline, "get edgeclusters") {
+		klog.Infof("~~~~~~~~ 1 running (%v) (%v)", commandline, timeout)
+	}*/
+
+	background := false
+	if strings.HasSuffix(commandline, " &") {
+		background = true
+		//commandline = commandline[0: len(commandline)-2]
+		timeout = 0
+	}
+
 	if timeout > 0 {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 		defer cancel()
@@ -52,16 +65,34 @@ func ExecCommandLineWithTimeOut(commandline string, timeout int) (string, error)
 		cmd = exec.Command(ShellToUse, "-c", commandline)
 	}
 
+	/*if !strings.Contains(commandline, " mission") && !strings.Contains(commandline, "cluster-info") && !strings.Contains(commandline, "get nodes") &&  !strings.Contains(commandline, "get edgeclusters") {
+		klog.Infof("~~~~~~~~ 2 running (%v) (%v)", commandline, timeout)
+	}*/
 	exitCode := 0
 	var output []byte
 	var err error
 
-	if output, err = cmd.CombinedOutput(); err != nil {
-		if exitError, ok := err.(*exec.ExitError); ok {
-			exitCode = exitError.ExitCode()
+	if background {
+		fmt.Printf("\n Qian 1 --------- %v", commandline)
+		if err := cmd.Start(); err != nil {
+			fmt.Printf("\n Qian 2 --------- %v", commandline)
+			output = []byte("Failed to start the command")
+			exitCode = 1
+		}
+		fmt.Printf("\n Qian 3 --------- %v", commandline)
+		//go cmd.CombinedOutput()	
+		//go cmd.CombinedOutput()
+	} else {
+		if output, err = cmd.CombinedOutput(); err != nil {
+			if exitError, ok := err.(*exec.ExitError); ok {
+				exitCode = exitError.ExitCode()
+			}
 		}
 	}
 
+	/*if !strings.Contains(commandline, " mission") && !strings.Contains(commandline, "cluster-info") && !strings.Contains(commandline, "get nodes") &&  !strings.Contains(commandline, "get edgeclusters") {
+		klog.Infof("~~~~~~~~ 3 running (%v) (%v)", commandline, timeout)
+	}*/
 	var finalErr error
 	if exitCode != 0 || err != nil {
 		finalErr = fmt.Errorf("Command (%v) failed: exitcode: %v, output (%v), error: %v", commandline, exitCode, string(output), err)
@@ -69,5 +100,8 @@ func ExecCommandLineWithTimeOut(commandline string, timeout int) (string, error)
 		klog.V(3).Infof("Running Command (%v) succeeded", commandline)
 	}
 
+	/*if !strings.Contains(commandline, " mission") && !strings.Contains(commandline, "cluster-info") && !strings.Contains(commandline, "get nodes") &&  !strings.Contains(commandline, "get edgeclusters") {
+		klog.Infof("~~~~~~~~ 4 running (%v) (%v)", commandline, timeout)
+	}*/
 	return string(output), finalErr
 }

@@ -6,4 +6,4 @@ spec:
   statecheck:
     command: "echo port 3306"
   missioncommand: 
-    command: "netstat -tulpn | grep LISTEN | grep 3306 || [kubectl] port-forward $([kubectl] get pods -l app=mysql -n face --kubeconfig [kubeconfig] -o json |  jq -r .items[0].metadata.name) 3306:3306  -n face --kubeconfig [kubeconfig] > /dev/null 2>&1 &"
+    command: "netstat -tulpn | grep LISTEN | grep 3306 || nohup [kubectl] port-forward $([kubectl] get pods -l app=mysql -n face --kubeconfig [kubeconfig] -o json |  jq -r .items[0].metadata.name) 3306:3306  -n face --kubeconfig [kubeconfig] > /dev/null 2>&1 &"

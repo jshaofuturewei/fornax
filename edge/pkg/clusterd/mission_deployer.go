@@ -98,7 +98,7 @@ func (m *MissionDeployer) ApplyMission(mission *edgeclustersv1.Mission) error {
 			if strings.Contains(output, "created") {
 				klog.Infof("Mission %v is created ", mission.Name)
 			} else {
-				klog.V(4).Infof("Mission %v is configured.", mission.Name)
+				klog.Infof("Mission %v is configured.", mission.Name)
 			}
 		}
 	}
@@ -110,7 +110,9 @@ func (m *MissionDeployer) ApplyMission(mission *edgeclustersv1.Mission) error {
 		if err !=nil {
 			klog.Errorf("Failed to get the content deploy command of mission %v: %v", mission.Name, err)
 		} else {
+			//klog.Infof("~~~~~~~~~~~ Running (%v)", deployContentCmd)
 			output, err := helper.ExecCommandToCluster(deployContentCmd)
+			//klog.Infof("~~~~~~~~~~~ returned from Running (%v)", deployContentCmd)
 			if err != nil {
 				klog.Errorf("Failed to apply the content of mission %v: %v", mission.Name, err)
 			} else {
