@@ -1,0 +1,9 @@
+apiVersion: edgeclusters.kubeedge.io/v1
+kind: Mission
+metadata:
+  name: command-receiver-port-forward
+spec:
+  statecheck:
+    command: "echo port 8000"
+  missioncommand: 
+    command: "netstat -tulpn | grep LISTEN | grep 8000 || nohup [kubectl] port-forward $([kubectl] get pods -l app=receiver -n face --kubeconfig [kubeconfig] -o json |  jq -r .items[0].metadata.name) 8000:8000  -n face --kubeconfig [kubeconfig] &"
