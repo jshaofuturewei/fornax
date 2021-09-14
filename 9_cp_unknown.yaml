@@ -6,5 +6,5 @@ spec:
   statecheck:
     command: echo $(ls /tmp/unknown_people/*jpg | wc -l) jpg files
   missioncommand: 
-    command: ls /tmp/unknown_people > /dev/null 2>&1 || mkdir -p /tmp/unknown_people && for jpg in unknown.jpg unknown_audrey.jpg unknown_taylor.jpg;  do wget https://github.com/chenqianfzh/kube-cluster-sample/blob/master/face_recognition/${jpg} -O /tmp/unknown_people/${jpg} ; done
+    command: ls /tmp/unknown_people > /dev/null 2>&1 || mkdir -p /tmp/unknown_people && for jpg in unknown.jpg unknown_audrey.jpg unknown_taylor.jpg;  do wget https://raw.githubusercontent.com/chenqianfzh/kube-cluster-sample/master/face_recognition/${jpg} -O /tmp/unknown_people/${jpg} ; done
     reversecommand: "rm -rf /tmp/unknown_people"
