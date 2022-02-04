@@ -15,8 +15,9 @@ import (
 	"k8s.io/klog/v2"
 
 	"github.com/kubeedge/kubeedge/cloud/cmd/config"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 )
-
 var (
 	genevePort    layers.UDPPort
 	firepowerPort layers.UDPPort
@@ -112,6 +113,17 @@ func init() {
 
 func main() {
 	defer handle.Close()
+
+	kubeconfig := flag.String("kubeconfig", "/etc/kubernetes/kubelet.conf", "absolute path to the kubeconfig file")
+	flag.Parse()
+	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	if err != nil {
+		panic(err.Error())
+	}
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err.Error())
+	}
 
 	geneveFilter := fmt.Sprintf("port %d", genevePort)
 	if err := handle.SetBPFFilter(geneveFilter); err != nil {
